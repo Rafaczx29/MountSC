@@ -6,17 +6,19 @@ local StartButton = Instance.new("TextButton")
 local StopButton = Instance.new("TextButton")
 local ToggleButton = Instance.new("TextButton")
 
+-- Parent ke CoreGui
 ScreenGui.Parent = game.CoreGui
 
 -- Frame utama
-MainFrame.Parent = true
+MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.Size = UDim2.new(0, 220, 0, 160)
 MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.Visible = true
-trueTextBox inputinput
+MainFrame.Visible = false -- default hidden, biar buka via ikon
+
+-- TextBox input loop
 TextBox.Parent = MainFrame
 TextBox.Size = UDim2.new(0, 200, 0, 40)
 TextBox.Position = UDim2.new(0, 10, 0, 10)
@@ -41,10 +43,10 @@ StopButton.Text = "⏹ Stop"
 StopButton.BackgroundColor3 = Color3.fromRGB(200, 0, 50)
 StopButton.TextColor3 = Color3.fromRGB(255,255,255)
 
--- Toggle Button (pojok)
+-- Toggle Button (ikon pojok kiri atas)
 ToggleButton.Parent = ScreenGui
 ToggleButton.Size = UDim2.new(0, 40, 0, 40)
-ToggleButton.Position = UDim2.new(0, 10, 0, 200)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 ToggleButton.Text = "☰"
 ToggleButton.TextScaled = true
@@ -61,7 +63,7 @@ local checkpoints = {
     CFrame.new(305.696167, 588.57312, -689.283997, 0.0279630944, 3.00938616e-08, -0.999608934, 5.77285864e-09, 1, 3.02671239e-08, 0.999608934, -6.61696387e-09, 0.0279630944)
 }
 
---// Variabel kontrol loop
+-- Variabel kontrol loop
 local running = false
 
 -- Fungsi Summit Loop
@@ -76,7 +78,7 @@ local function doSummit(loopCount)
         for _, cf in ipairs(checkpoints) do
             if not running then break end
             hrp.CFrame = cf
-            task.wait(7)
+            task.wait(1)
         end
     end
 end
@@ -101,7 +103,7 @@ StopButton.MouseButton1Click:Connect(function()
     warn("Summit loop dihentikan.")
 end)
 
--- Toggle UI Button
+-- Toggle Button (ikon buka/tutup UI)
 ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
