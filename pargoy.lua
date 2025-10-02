@@ -9,15 +9,14 @@ local ToggleButton = Instance.new("TextButton")
 ScreenGui.Parent = game.CoreGui
 
 -- Frame utama
-MainFrame.Parent = ScreenGui
+MainFrame.Parent = true
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.Size = UDim2.new(0, 220, 0, 160)
 MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Visible = true
-
--- TextBox input loop
+trueTextBox inputinput
 TextBox.Parent = MainFrame
 TextBox.Size = UDim2.new(0, 200, 0, 40)
 TextBox.Position = UDim2.new(0, 10, 0, 10)
@@ -77,7 +76,7 @@ local function doSummit(loopCount)
         for _, cf in ipairs(checkpoints) do
             if not running then break end
             hrp.CFrame = cf
-            task.wait(5)
+            task.wait(7)
         end
     end
 end
