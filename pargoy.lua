@@ -48,7 +48,7 @@ ToggleButton.Parent = ScreenGui
 ToggleButton.Size = UDim2.new(0, 40, 0, 40)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-ToggleButton.Text = "☰"
+ToggleButton.Text = "▶MENU"
 ToggleButton.TextScaled = true
 ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
 
@@ -78,7 +78,7 @@ local function doSummit(loopCount)
         for _, cf in ipairs(checkpoints) do
             if not running then break end
             hrp.CFrame = cf
-            task.wait(1)
+            task.wait(7)
         end
     end
 end
