@@ -99,7 +99,7 @@ local function doSummit(loopCount)
         if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character:BreakJoints()
         end
-        task.wait(2)
+        task.wait(5)
     end
 end
 
