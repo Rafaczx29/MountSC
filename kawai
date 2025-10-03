@@ -1,5 +1,15 @@
 --// UI Toggle + Frame
 local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SummitUI"
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game.CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+end
 local MainFrame = Instance.new("Frame")
 local TextBox = Instance.new("TextBox")
 local StartButton = Instance.new("TextButton")
