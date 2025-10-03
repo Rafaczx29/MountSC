@@ -1,9 +1,85 @@
--- Fungsi tunggu sampai karakter respawn siap
-local function waitForRespawn(player)
-    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-end
+--// UI Toggle + Frame
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TextBox = Instance.new("TextBox")
+local StartButton = Instance.new("TextButton")
+local StopButton = Instance.new("TextButton")
+local ToggleButton = Instance.new("TextButton")
 
--- Fungsi Summit
+ScreenGui.Parent = game.CoreGui
+
+-- Frame utama
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = true
+
+-- TextBox input loop summit
+TextBox.Parent = MainFrame
+TextBox.Size = UDim2.new(0, 200, 0, 40)
+TextBox.Position = UDim2.new(0, 10, 0, 10)
+TextBox.PlaceholderText = "Jumlah Summit"
+TextBox.Text = ""
+TextBox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+TextBox.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Start Button
+StartButton.Parent = MainFrame
+StartButton.Size = UDim2.new(0, 200, 0, 40)
+StartButton.Position = UDim2.new(0, 10, 0, 60)
+StartButton.Text = "▶ Start Summit"
+StartButton.BackgroundColor3 = Color3.fromRGB(0, 170, 80)
+StartButton.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Stop Button
+StopButton.Parent = MainFrame
+StopButton.Size = UDim2.new(0, 200, 0, 40)
+StopButton.Position = UDim2.new(0, 10, 0, 110)
+StopButton.Text = "⏹ Stop"
+StopButton.BackgroundColor3 = Color3.fromRGB(200, 0, 50)
+StopButton.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Toggle Button
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 200)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ToggleButton.Text = "☰"
+ToggleButton.TextScaled = true
+ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Toggle UI
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+--// Checkpoint CF
+local checkpoints = {
+    CFrame.new(276.279999, 82.8600616, 248.793152, -0.868196547, 0.199234203, -0.454467267, 1.89314555e-08, 0.915857553, 0.401503354, 0.496220469, 0.348583817, -0.795144379),
+    CFrame.new(583.173462, 273.969757, -56.9630508, 0.136426046, 0.516322851, -0.845457673, 9.67391389e-10, 0.853437066, 0.521195889, 0.990650237, -0.0711046979, 0.11643105),
+    CFrame.new(1201.44922, 271.754181, 293.632416, -0.504401386, -0.34073925, 0.793395221, -1.37698386e-09, 0.918845892, 0.394616514, -0.863469303, 0.199045122, -0.463467151),
+    CFrame.new(1553.07837, 284.460297, 288.450745, -0.662786841, 0.543820441, -0.514755189, 3.90933164e-05, 0.6874578, 0.726224303, 0.748808086, 0.481311798, -0.45565927),
+    CFrame.new(1818.8158, 324.498138, -9.63145542, -0.215066984, 0.623449326, -0.751702845, -3.36478442e-05, 0.769709945, 0.63839376, 0.976599276, 0.137322709, -0.165518224),
+    CFrame.new(2259.35571, 397.438202, 110.432518, 0.446959823, -0.0285143852, -0.894099474, 4.55109977e-10, 0.99949187, -0.0318755321, 0.894554019, 0.0142470812, 0.4467327),
+    CFrame.new(3168.38062, 511.059021, 334.586578, -0.879649818, 0.315933168, -0.355531216, 3.65376582e-05, 0.747552931, 0.664202213, 0.475621939, 0.584252357, -0.65759635),
+    CFrame.new(3672.33301, 492.893524, 251.435852, -0.432727486, 0.293471456, -0.852420926, 8.42184988e-09, 0.945532441, 0.325527877, 0.901524782, 0.140864849, -0.409157872),
+    CFrame.new(4220.95215, 490.162598, 515.524963, -0.976303995, 0.12882261, -0.173882738, 1.0889783e-05, 0.803540945, 0.595249474, 0.216403484, 0.581142545, -0.784501672),
+    CFrame.new(4414.6709, 707.102905, 810.676086, 0.846791685, -0.296984971, 0.441297799, -1.77755659e-08, 0.829624653, 0.558321536, -0.531924665, -0.472782046, 0.702519238),
+    CFrame.new(4369.75439, 700.241272, 1875.14111, -0.981588125, 0.154263943, -0.112638555, -2.22644587e-08, 0.589699745, 0.807622552, 0.191009969, 0.792752683, -0.578842282),
+    CFrame.new(5029.10254, 443.952179, 2444.948, -0.965116262, 0.168346331, -0.200524658, 0.00016478129, 0.766272724, 0.642515421, 0.261821687, 0.620069027, -0.739570022),
+    CFrame.new(5225.33105, 447.27655, 3078.65039, -0.813819766, -0.0104356939, 0.581023633, 7.11044945e-10, 0.999838769, 0.0179579817, -0.581117332, 0.0146145606, -0.813688517),
+    CFrame.new(5253.78271, 445.019226, 3866.81006, -0.954332709, -0.109928988, 0.277785331, 2.35035895e-05, 0.929810703, 0.368038058, -0.298745841, 0.351237297, -0.887346208),
+    CFrame.new(5313.37256, 690.663879, 4056.58765, -0.803058565, 0.379909873, -0.459091991, -1.5043991e-05, 0.770404756, 0.637555122, 0.595900118, 0.512000978, -0.618674397),
+    CFrame.new(5431.00928, 1094.04651, 4403.66992, -0.63802737, -0.36418587, 0.678446531, -3.00574538e-05, 0.881095529, 0.472938329, -0.77001369, 0.301727206, -0.562174022),
+    CFrame.new(5265.49072, 1161.06152, 4751.92285, 0.937489927, -0.160446599, 0.308819562, 7.50702338e-06, 0.887390256, 0.461019069, -0.348012418, -0.432198405, 0.831920624)
+}
+
+-- Flag jalan
+local running = false
+
 -- Fungsi tunggu sampai karakter respawn siap
 local function waitForRespawn(player)
     repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -37,14 +113,17 @@ local function doSummit(loopCount)
     running = false
 end
 
-        -- Reset karakter setelah checkpoint terakhir
-        if player and player.Character then
-            player.Character:BreakJoints()
-        end
-
-        -- tunggu sampai respawn ready
-        waitForRespawn(player)
-        task.wait(1) -- tambahan jeda kecil biar aman
+-- Start Button
+StartButton.MouseButton1Click:Connect(function()
+    local loopCount = tonumber(TextBox.Text) or 1
+    if not running then
+        task.spawn(function()
+            doSummit(loopCount)
+        end)
     end
+end)
+
+-- Stop Button
+StopButton.MouseButton1Click:Connect(function()
     running = false
-end
+end)
