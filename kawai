@@ -1,72 +1,8 @@
---// UI Toggle + Frame
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SummitUI"
+--// UI Summit Teleport Script (dengan looping summit sesuai input)
+local player = game.Players.LocalPlayer
+local humanoidRootPart = player.Character and player.Character:WaitForChild("HumanoidRootPart")
 
-if syn and syn.protect_gui then
-    syn.protect_gui(ScreenGui)
-    ScreenGui.Parent = game.CoreGui
-elseif gethui then
-    ScreenGui.Parent = gethui()
-else
-    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-end
-local MainFrame = Instance.new("Frame")
-local TextBox = Instance.new("TextBox")
-local StartButton = Instance.new("TextButton")
-local StopButton = Instance.new("TextButton")
-local ToggleButton = Instance.new("TextButton")
-
-ScreenGui.Parent = game.CoreGui
-
--- Frame utama
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.Size = UDim2.new(0, 220, 0, 160)
-MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Visible = true
-
--- TextBox input loop summit
-TextBox.Parent = MainFrame
-TextBox.Size = UDim2.new(0, 200, 0, 40)
-TextBox.Position = UDim2.new(0, 10, 0, 10)
-TextBox.PlaceholderText = "Jumlah Summit"
-TextBox.Text = ""
-TextBox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-TextBox.TextColor3 = Color3.fromRGB(255,255,255)
-
--- Start Button
-StartButton.Parent = MainFrame
-StartButton.Size = UDim2.new(0, 200, 0, 40)
-StartButton.Position = UDim2.new(0, 10, 0, 60)
-StartButton.Text = "▶ Start Summit"
-StartButton.BackgroundColor3 = Color3.fromRGB(0, 170, 80)
-StartButton.TextColor3 = Color3.fromRGB(255,255,255)
-
--- Stop Button
-StopButton.Parent = MainFrame
-StopButton.Size = UDim2.new(0, 200, 0, 40)
-StopButton.Position = UDim2.new(0, 10, 0, 110)
-StopButton.Text = "⏹ Stop"
-StopButton.BackgroundColor3 = Color3.fromRGB(200, 0, 50)
-StopButton.TextColor3 = Color3.fromRGB(255,255,255)
-
--- Toggle Button
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 40, 0, 40)
-ToggleButton.Position = UDim2.new(0, 10, 0, 200)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-ToggleButton.Text = "☰"
-ToggleButton.TextScaled = true
-ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
-
--- Toggle UI
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
---// Checkpoint CF
+--// Checkpoint data
 local checkpoints = {
     CFrame.new(276.279999, 82.8600616, 248.793152, -0.868196547, 0.199234203, -0.454467267, 1.89314555e-08, 0.915857553, 0.401503354, 0.496220469, 0.348583817, -0.795144379),
     CFrame.new(583.173462, 273.969757, -56.9630508, 0.136426046, 0.516322851, -0.845457673, 9.67391389e-10, 0.853437066, 0.521195889, 0.990650237, -0.0711046979, 0.11643105),
@@ -87,54 +23,120 @@ local checkpoints = {
     CFrame.new(5265.49072, 1161.06152, 4751.92285, 0.937489927, -0.160446599, 0.308819562, 7.50702338e-06, 0.887390256, 0.461019069, -0.348012418, -0.432198405, 0.831920624)
 }
 
--- Flag jalan
-local running = false
+--// Buat UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SummitUI"
 
--- Fungsi tunggu sampai karakter respawn siap
-local function waitForRespawn(player)
-    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game.CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = player:WaitForChild("PlayerGui")
 end
 
--- Fungsi Summit
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 180)
+MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- UICorner
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = MainFrame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "🏔️ Summit Teleport"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.Parent = MainFrame
+
+-- Input jumlah looping
+local loopBox = Instance.new("TextBox")
+loopBox.Size = UDim2.new(0.8, 0, 0, 30)
+loopBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+loopBox.PlaceholderText = "Jumlah summit (default 1)"
+loopBox.Text = ""
+loopBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+loopBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+loopBox.Font = Enum.Font.Gotham
+loopBox.TextSize = 14
+loopBox.Parent = MainFrame
+
+-- Start button
+local startBtn = Instance.new("TextButton")
+startBtn.Size = UDim2.new(0.8, 0, 0, 30)
+startBtn.Position = UDim2.new(0.1, 0, 0.55, 0)
+startBtn.Text = "▶️ Start Summit"
+startBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+startBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextSize = 14
+startBtn.Parent = MainFrame
+
+-- Stop button
+local stopBtn = Instance.new("TextButton")
+stopBtn.Size = UDim2.new(0.8, 0, 0, 30)
+stopBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
+stopBtn.Text = "⏹️ Stop"
+stopBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopBtn.Font = Enum.Font.GothamBold
+stopBtn.TextSize = 14
+stopBtn.Parent = MainFrame
+
+-- Toggle ikon
+local toggleBtn = Instance.new("ImageButton")
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0.05, 0)
+toggleBtn.Image = "rbxassetid://3926305904"
+toggleBtn.ImageRectOffset = Vector2.new(764, 324)
+toggleBtn.ImageRectSize = Vector2.new(36, 36)
+toggleBtn.Parent = ScreenGui
+
+MainFrame.Visible = false
+toggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Logic summit looping
+local running = false
 local function doSummit(loopCount)
     running = true
-    local player = game.Players.LocalPlayer
-
     for l = 1, loopCount do
         if not running then break end
-
-        -- Jalankan dari CP1 ke CP terakhir
         for i, cf in ipairs(checkpoints) do
             if not running then break end
-            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character.HumanoidRootPart.CFrame = cf
+            humanoidRootPart = player.Character and player.Character:WaitForChild("HumanoidRootPart")
+            if humanoidRootPart then
+                humanoidRootPart.CFrame = cf
             end
-            task.wait(2) -- delay 2 detik antar CP
+            task.wait(2)
+            if i == #checkpoints then
+                player.Character:BreakJoints() -- reset karakter di akhir summit
+                task.wait(5) -- tunggu respawn biar ga langsung lompat CP3
+            end
         end
-
-        -- Reset karakter setelah checkpoint terakhir
-        if player and player.Character then
-            player.Character:BreakJoints()
-        end
-
-        -- Tunggu sampai respawn ready
-        waitForRespawn(player)
-        task.wait(1) -- tambahan jeda kecil biar aman
     end
     running = false
 end
 
--- Start Button
-StartButton.MouseButton1Click:Connect(function()
-    local loopCount = tonumber(TextBox.Text) or 1
+startBtn.MouseButton1Click:Connect(function()
     if not running then
-        task.spawn(function()
-            doSummit(loopCount)
-        end)
+        local count = tonumber(loopBox.Text) or 1
+        doSummit(count)
     end
 end)
 
--- Stop Button
-StopButton.MouseButton1Click:Connect(function()
+stopBtn.MouseButton1Click:Connect(function()
     running = false
 end)
