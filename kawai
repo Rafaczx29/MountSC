@@ -103,6 +103,7 @@ local function doSummit(loopCount)
     for l = 1, loopCount do
         if not running then break end
 
+        -- Jalankan dari CP1 ke CP terakhir
         for i, cf in ipairs(checkpoints) do
             if not running then break end
             if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -116,7 +117,7 @@ local function doSummit(loopCount)
             player.Character:BreakJoints()
         end
 
-        -- tunggu sampai respawn ready
+        -- Tunggu sampai respawn ready
         waitForRespawn(player)
         task.wait(1) -- tambahan jeda kecil biar aman
     end
