@@ -115,7 +115,7 @@ local function startSummit()
 			if not running then break end
 			local hrp = getHRP()
 			hrp.CFrame = cf
-			task.wait(1)
+			task.wait(2)
 		end
 		if running then
 			resetCharacter()
