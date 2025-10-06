@@ -1,74 +1,75 @@
---// Auto Mount Japan Summit
-local player = game.Players.LocalPlayer
-repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-
-local guiParent = gethui and gethui() or game.CoreGui
-if guiParent:FindFirstChild("JapanSummitUI") then
-	guiParent.JapanSummitUI:Destroy()
+-- // Mount Japanese Auto Summit GUI (by ChatGPT)
+if game.CoreGui:FindFirstChild("AutoSummitUI") then
+	game.CoreGui.AutoSummitUI:Destroy()
 end
 
---// UI
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- // UI Library (Simple & Clean)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JapanSummitUI"
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent = guiParent
+ScreenGui.Name = "AutoSummitUI"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 230, 0, 140)
-Frame.Position = UDim2.new(0.4, 0, 0.4, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.35, 0, 0.3, 0)
+Frame.Size = UDim2.new(0, 250, 0, 140)
 Frame.Active = true
 Frame.Draggable = true
-Frame.Parent = ScreenGui
+Frame.Visible = true
+Frame.BackgroundTransparency = 0.1
+Frame.ClipsDescendants = true
+Frame.Name = "MainFrame"
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 12)
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Title.Text = "🇯🇵 Auto Mount Japan"
+Title.Parent = Frame
+Title.Text = "🏔️ Mount Janpanese Summit"
 Title.Font = Enum.Font.GothamBold
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 15
-Title.Parent = Frame
+Title.TextSize = 16
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 0, 0, 10)
+Title.Size = UDim2.new(1, 0, 0, 25)
 
 local StartBtn = Instance.new("TextButton")
-StartBtn.Size = UDim2.new(1, -20, 0, 35)
-StartBtn.Position = UDim2.new(0, 10, 0, 45)
-StartBtn.Text = "▶ Start"
-StartBtn.Font = Enum.Font.GothamBold
-StartBtn.TextSize = 14
-StartBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-StartBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-StartBtn.BorderSizePixel = 0
 StartBtn.Parent = Frame
+StartBtn.Text = "▶️ START"
+StartBtn.Font = Enum.Font.GothamBold
+StartBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StartBtn.TextSize = 15
+StartBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 85)
+StartBtn.Position = UDim2.new(0.1, 0, 0.35, 0)
+StartBtn.Size = UDim2.new(0.8, 0, 0, 30)
+local StartCorner = Instance.new("UICorner", StartBtn)
+StartCorner.CornerRadius = UDim.new(0, 8)
 
 local StopBtn = Instance.new("TextButton")
-StopBtn.Size = UDim2.new(1, -20, 0, 35)
-StopBtn.Position = UDim2.new(0, 10, 0, 85)
-StopBtn.Text = "⏹ Stop"
-StopBtn.Font = Enum.Font.GothamBold
-StopBtn.TextSize = 14
-StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-StopBtn.BorderSizePixel = 0
 StopBtn.Parent = Frame
+StopBtn.Text = "⏹️ STOP"
+StopBtn.Font = Enum.Font.GothamBold
+StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StopBtn.TextSize = 15
+StopBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+StopBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
+StopBtn.Size = UDim2.new(0.8, 0, 0, 30)
+local StopCorner = Instance.new("UICorner", StopBtn)
+StopCorner.CornerRadius = UDim.new(0, 8)
 
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 35, 0, 35)
-CloseBtn.Position = UDim2.new(1, -35, 0, 0)
-CloseBtn.Text = "✕"
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 16
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-CloseBtn.BorderSizePixel = 0
-CloseBtn.Parent = Frame
+local ToggleBtn = Instance.new("ImageButton")
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundTransparency = 1
+ToggleBtn.Image = "rbxassetid://6031280882" -- ikon toggle modern
+ToggleBtn.Position = UDim2.new(0.015, 0, 0.45, 0)
+ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 
-CloseBtn.MouseButton1Click:Connect(function()
-	ScreenGui:Destroy()
-end)
-
---// Checkpoint List
+-- // Checkpoints (21 total)
 local checkpoints = {
 	CFrame.new(974.708069, 194.40625, -729.699158, 0.994000196, 0, 0.109378204, 0, 1, 0, -0.109378204, 0, 0.994000196),
 	CFrame.new(81.5000076, 115, -972.5, -1, 0, 0, 0, 1, 0, 0, 0, -1),
@@ -89,32 +90,51 @@ local checkpoints = {
 	CFrame.new(357.5, 966.27533, -536, 0, 0, 1, 0, 1, -0, -1, 0, 0),
 	CFrame.new(-12.5, 1000.77533, -477, 0, 0, 1, 0, 1, -0, -1, 0, 0),
 	CFrame.new(-284.5, 1000.77533, -278, 0, 0, 1, 0, 1, -0, -1, 0, 0),
-	CFrame.new(-431.5, 1044.77539, -106, 0, 0, 1, 0, 1, -0, -1, 0, 0)
+	CFrame.new(-431.5, 1044.77539, -106, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	CFrame.new(-11.8530865, 1020.06702, 11.84729, -0.172915623, 6.70903688e-08, 0.984936655, -4.19715521e-12, 1, -6.8117167e-08, -0.984936655, -1.17826566e-08, -0.172915623)
 }
 
---// Logika Start/Stop
+-- // Core Functions
 local running = false
 
-local function teleportLoop()
-	running = true
+local function getHRP()
 	local char = player.Character or player.CharacterAdded:Wait()
-	local root = char:WaitForChild("HumanoidRootPart")
-	
-	for i, cf in ipairs(checkpoints) do
-		if not running then break end
-		root.CFrame = cf
-		task.wait(2)
-	end
-	
-	running = false
+	return char:WaitForChild("HumanoidRootPart")
 end
 
-StartBtn.MouseButton1Click:Connect(function()
-	if not running then
-		task.spawn(teleportLoop)
-	end
-end)
+local function resetCharacter()
+	player.Character:BreakJoints()
+end
 
-StopBtn.MouseButton1Click:Connect(function()
+local function startSummit()
+	if running then return end
+	running = true
+	StartBtn.Text = "⏸️ RUNNING..."
+	repeat
+		for i, cf in ipairs(checkpoints) do
+			if not running then break end
+			local hrp = getHRP()
+			hrp.CFrame = cf
+			task.wait(1)
+		end
+		if running then
+			resetCharacter()
+			task.wait(6)
+		end
+	until not running
+	StartBtn.Text = "▶️ START"
+end
+
+local function stopSummit()
 	running = false
+	StartBtn.Text = "▶️ START"
+end
+
+StartBtn.MouseButton1Click:Connect(startSummit)
+StopBtn.MouseButton1Click:Connect(stopSummit)
+
+local visible = true
+ToggleBtn.MouseButton1Click:Connect(function()
+	visible = not visible
+	Frame.Visible = visible
 end)
