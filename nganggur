@@ -92,10 +92,15 @@ local function teleportLoop()
 			task.wait(delayTime)
 		end
 
-		-- Reset character setelah sampai summit
+		-- ✅ Fix bagian ini biar auto reset dan lanjut lagi
 		Status.Text = "Summit reached! Resetting..."
 		task.wait(1)
 		player:LoadCharacter()
+
+		-- Tunggu karakter baru muncul setelah reset
+		character = player.CharacterAdded:Wait()
+		humanoid = character:WaitForChild("Humanoid")
+
 		task.wait(3)
 	end
 	Status.Text = "Stopped"
@@ -115,5 +120,3 @@ Button.MouseButton1Click:Connect(function()
 		task.spawn(teleportLoop)
 	end
 end)
-
--- ✅ Selesai
