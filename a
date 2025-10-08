@@ -1,0 +1,141 @@
+-- 🗻 Mount Pengangguran Auto Summit v2 (Fix GUI)
+-- by GPT-5 | CFrame Teleport + Auto Suicide + Universal GUI Parent
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- === CONFIG: CFrame Checkpoints ===
+local cframes = {
+    CFrame.new(-59, 58.1081085, -1177),
+    CFrame.new(-387.276733, 154.426819, -1781.76294),
+    CFrame.new(-588.913269, 282.971405, -1568.94922),
+    CFrame.new(-951.105896, 261.795898, -1579.99878),
+    CFrame.new(-1278.88647, 261.893158, -1798.42981),
+    CFrame.new(-1646.29712, 177.646057, -1671.74207),
+    CFrame.new(-2139.5, 388.5, -1333),
+    CFrame.new(-1988.50171, 483.735382, -180.079056),
+    CFrame.new(-2387.29517, 593.031616, -109.968903),
+    CFrame.new(-2019.49304, 732.031616, 64.6678391),
+    CFrame.new(-1618.6344, 755.031616, -11.5432415),
+    CFrame.new(-1843.79443, 791, 643.830078),
+    CFrame.new(-2257.42871, 1026, 1435.71667),
+    CFrame.new(-2381.02026, 1067, 1834.38074),
+    CFrame.new(-2712.1814, 1210, 1922.29736),
+    CFrame.new(-3080.22998, 1338, 1858.11975),
+    CFrame.new(-3235.22998, 1338, 2174.11963),
+    CFrame.new(-3339.19556, 1494.58911, 2219.96265)
+}
+
+local running = false
+local delayTime = 2
+
+-- === SAFE GUI PARENT ===
+local function safeParent()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "MountPengangguranUI"
+    gui.ResetOnSpawn = false
+
+    if gethui then
+        gui.Parent = gethui()
+    elseif syn and syn.protect_gui then
+        syn.protect_gui(gui)
+        gui.Parent = game:GetService("CoreGui")
+    elseif game:GetService("CoreGui") then
+        gui.Parent = game:GetService("CoreGui")
+    elseif player:FindFirstChild("PlayerGui") then
+        gui.Parent = player:FindFirstChild("PlayerGui")
+    else
+        gui.Parent = game:GetService("StarterGui")
+    end
+
+    return gui
+end
+
+local ScreenGui = safeParent()
+
+-- === UI ===
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 230, 0, 120)
+Frame.Position = UDim2.new(0.8, 0, 0.25, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BackgroundTransparency = 0.15
+Frame.Active = true
+Frame.Draggable = true
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Text = "🏔️ Mount Pengangguran"
+Title.TextSize = 15
+Title.TextColor3 = Color3.new(1, 1, 1)
+
+local Status = Instance.new("TextLabel", Frame)
+Status.Size = UDim2.new(1, -20, 0, 20)
+Status.Position = UDim2.new(0, 10, 0, 35)
+Status.BackgroundTransparency = 1
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 13
+Status.TextColor3 = Color3.fromRGB(200, 200, 200)
+Status.Text = "Status: Idle"
+
+local Button = Instance.new("TextButton", Frame)
+Button.Size = UDim2.new(0, 200, 0, 35)
+Button.Position = UDim2.new(0.5, -100, 1, -45)
+Button.Text = "▶️ Start Auto Summit"
+Button.Font = Enum.Font.GothamBold
+Button.TextSize = 14
+Button.BackgroundColor3 = Color3.fromRGB(30, 180, 90)
+Button.TextColor3 = Color3.new(1, 1, 1)
+Button.BorderSizePixel = 0
+Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 10)
+
+-- === MAIN LOOP ===
+local function teleportLoop()
+	running = true
+	while running do
+		for i, cf in ipairs(cframes) do
+			if not running then break end
+			local char = player.Character or player.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart", 3)
+			if hrp then
+				hrp.CFrame = cf
+				Status.Text = ("Teleporting... [%d/%d]"):format(i, #cframes)
+			end
+			task.wait(delayTime)
+		end
+
+		-- Auto Suicide setelah summit
+		Status.Text = "Summit reached! 💀 Suicide..."
+		task.wait(1)
+		local char = player.Character
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid").Health = 0
+		end
+
+		-- Tunggu respawn
+		task.wait(3)
+		character = player.Character or player.CharacterAdded:Wait()
+		character:WaitForChild("HumanoidRootPart")
+		Status.Text = "Respawned! Restarting climb..."
+		task.wait(2)
+	end
+	Status.Text = "Stopped"
+end
+
+-- === BUTTON HANDLER ===
+Button.MouseButton1Click:Connect(function()
+	if running then
+		running = false
+		Button.Text = "▶️ Start Auto Summit"
+		Button.BackgroundColor3 = Color3.fromRGB(30, 180, 90)
+		Status.Text = "Stopped"
+	else
+		Button.Text = "⏸️ Stop Auto Summit"
+		Button.BackgroundColor3 = Color3.fromRGB(200, 70, 70)
+		Status.Text = "Running..."
+		task.spawn(teleportLoop)
+	end
+end)
