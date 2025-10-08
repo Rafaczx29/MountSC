@@ -1,41 +1,58 @@
--- 🗻 Mount Pengangguran Auto Summit v2
--- by GPT-5 | CFrame Teleport + UI (Janpanese Style)
+-- 🗻 Mount Pengangguran Auto Summit v2.1
+-- by GPT-5 | Fix GUI not showing + Auto Suicide Loop
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
--- === CONFIG: CFrame Checkpoints ===
+-- === CONFIG CFrame ===
 local cframes = {
-    CFrame.new(-59, 58.1081085, -1177, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-    CFrame.new(-387.276733, 154.426819, -1781.76294, 0.433303416, 0, -0.901248157, 0, 1, 0, 0.901248157, 0, 0.433303416),
-    CFrame.new(-588.913269, 282.971405, -1568.94922, 0.999648869, 0, 0.0264985319, 0, 1, 0, -0.0264985319, 0, 0.999648869),
-    CFrame.new(-951.105896, 261.795898, -1579.99878, -0.999648809, 0, -0.0264985319, 0, 1, 0, 0.0264985319, 0, -0.999648809),
-    CFrame.new(-1278.88647, 261.893158, -1798.42981, -0.997035503, 0.0769399107, 0.000680688536, 0.0769429207, 0.996997535, 0.0086986823, -9.36895958e-06, 0.0087252697, -0.999961972),
-    CFrame.new(-1646.29712, 177.646057, -1671.74207, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-2139.5, 388.5, -1333, 0, 0, 1, 0, 1, 0, -1, 0, 0),
-    CFrame.new(-1988.50171, 483.735382, -180.079056, 0.00731122494, 0, -0.999973297, 0, 1, 0, 0.999973297, 0, 0.00731122494),
-    CFrame.new(-2387.29517, 593.031616, -109.968903, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-2019.49304, 732.031616, 64.6678391, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-1618.6344, 755.031616, -11.5432415, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-1843.79443, 791, 643.830078, 0.766651392, 0, 0.642063558, 0, 1, 0, -0.642063558, 0, 0.766651392),
-    CFrame.new(-2257.42871, 1026, 1435.71667, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-2381.02026, 1067, 1834.38074, 0.0880642533, 0, 0.996114731, 0, 1, 0, -0.996114731, 0, 0.0880642533),
-    CFrame.new(-2712.1814, 1210, 1922.29736, -0.0226985216, 0, 0.999742448, 0, 1, 0, -0.999742448, 0, -0.0226985216),
-    CFrame.new(-3080.22998, 1338, 1858.11975, -0.0226985216, 0, 0.999742448, 0, 1, 0, -0.999742448, 0, -0.0226985216),
-    CFrame.new(-3235.22998, 1338, 2174.11963, -0.0226985216, 0, 0.999742448, 0, 1, 0, -0.999742448, 0, -0.0226985216),
-    CFrame.new(-3339.19556, 1494.58911, 2219.96265, -0.998225868, 2.3845308e-08, -0.0595412143, 2.16420748e-08, 1, 3.76483804e-08, 0.0595412143, 3.62929917e-08, -0.998225868), -- Summit
+    CFrame.new(-59, 58.1081085, -1177),
+    CFrame.new(-387.276733, 154.426819, -1781.76294),
+    CFrame.new(-588.913269, 282.971405, -1568.94922),
+    CFrame.new(-951.105896, 261.795898, -1579.99878),
+    CFrame.new(-1278.88647, 261.893158, -1798.42981),
+    CFrame.new(-1646.29712, 177.646057, -1671.74207),
+    CFrame.new(-2139.5, 388.5, -1333),
+    CFrame.new(-1988.50171, 483.735382, -180.079056),
+    CFrame.new(-2387.29517, 593.031616, -109.968903),
+    CFrame.new(-2019.49304, 732.031616, 64.6678391),
+    CFrame.new(-1618.6344, 755.031616, -11.5432415),
+    CFrame.new(-1843.79443, 791, 643.830078),
+    CFrame.new(-2257.42871, 1026, 1435.71667),
+    CFrame.new(-2381.02026, 1067, 1834.38074),
+    CFrame.new(-2712.1814, 1210, 1922.29736),
+    CFrame.new(-3080.22998, 1338, 1858.11975),
+    CFrame.new(-3235.22998, 1338, 2174.11963),
+    CFrame.new(-3339.19556, 1494.58911, 2219.96265),
+    CFrame.new(-11.8530865, 1020.06702, 11.84729, -0.172915623, 6.70903688e-08, 0.984936655, -4.19715521e-12, 1, -6.8117167e-08, -0.984936655, -1.17826566e-08, -0.172915623)
 }
 
 local running = false
 local delayTime = 2
 
--- === UI SETUP ===
-local ScreenGui = Instance.new("ScreenGui")
+-- === GUI FIX (auto parent)
+local function getSafeParent()
+	local core = game:FindFirstChildOfClass("CoreGui")
+	local plrGui = player:FindFirstChildOfClass("PlayerGui")
+	if gethui then return gethui()
+	elseif syn and syn.protect_gui then
+		local gui = Instance.new("ScreenGui")
+		syn.protect_gui(gui)
+		gui.Parent = core or plrGui or game:GetService("StarterGui")
+		return gui
+	else
+		local gui = Instance.new("ScreenGui")
+		gui.Parent = core or plrGui or game:GetService("StarterGui")
+		return gui
+	end
+end
+
+local ScreenGui = getSafeParent()
 ScreenGui.Name = "MountPengangguranUI"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = gethui and gethui() or game.CoreGui
 
+-- === UI ELEMENTS ===
 local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0, 230, 0, 120)
 Frame.Position = UDim2.new(0.8, 0, 0.25, 0)
@@ -43,7 +60,6 @@ Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Frame.BackgroundTransparency = 0.15
 Frame.Active = true
 Frame.Draggable = true
-
 Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
 
 local Title = Instance.new("TextLabel", Frame)
@@ -74,13 +90,12 @@ Button.TextColor3 = Color3.new(1, 1, 1)
 Button.BorderSizePixel = 0
 Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 10)
 
--- === TELEPORT LOOP (AUTO SUICIDE) ===
+-- === MAIN LOOP ===
 local function teleportLoop()
 	running = true
 	while running do
 		for i, cf in ipairs(cframes) do
 			if not running then break end
-
 			local char = player.Character or player.CharacterAdded:Wait()
 			local hrp = char:WaitForChild("HumanoidRootPart", 3)
 			local humanoid = char:FindFirstChildOfClass("Humanoid")
@@ -89,11 +104,9 @@ local function teleportLoop()
 				hrp.CFrame = cf
 				Status.Text = ("Teleporting... [%d/%d]"):format(i, #cframes)
 			end
-
 			task.wait(delayTime)
 		end
 
-		-- 🏔️ Setelah sampai summit
 		Status.Text = "Summit reached! 💀 Suicide..."
 		task.wait(1)
 
@@ -102,11 +115,10 @@ local function teleportLoop()
 			char:FindFirstChildOfClass("Humanoid").Health = 0
 		end
 
-		task.wait(3) -- tunggu respawn
+		task.wait(3)
 		character = player.Character or player.CharacterAdded:Wait()
 		character:WaitForChild("HumanoidRootPart")
 		character:WaitForChild("Humanoid")
-
 		Status.Text = "Respawned! Restarting climb..."
 		task.wait(2)
 	end
