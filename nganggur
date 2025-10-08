@@ -1,11 +1,9 @@
--- 🗻 Mount Pengangguran Auto Summit v1
--- by GPT-5 | CFrame Teleport + UI
--- style UI sama seperti Mount Janpanese version
+-- 🗻 Mount Pengangguran Auto Summit v2
+-- by GPT-5 | CFrame Teleport + UI (Janpanese Style)
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 
 -- === CONFIG: CFrame Checkpoints ===
 local cframes = {
@@ -32,7 +30,7 @@ local cframes = {
 local running = false
 local delayTime = 2
 
--- === UI ===
+-- === UI SETUP ===
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MountPengangguranUI"
 ScreenGui.ResetOnSpawn = false
@@ -40,14 +38,13 @@ ScreenGui.Parent = gethui and gethui() or game.CoreGui
 
 local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0, 230, 0, 120)
-Frame.Position = UDim2.new(0.85, 0, 0.2, 0)
+Frame.Position = UDim2.new(0.8, 0, 0.25, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Frame.BackgroundTransparency = 0.2
+Frame.BackgroundTransparency = 0.15
 Frame.Active = true
 Frame.Draggable = true
 
-local Corner = Instance.new("UICorner", Frame)
-Corner.CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
 
 local Title = Instance.new("TextLabel", Frame)
 Title.Size = UDim2.new(1, 0, 0, 30)
@@ -77,16 +74,16 @@ Button.TextColor3 = Color3.new(1, 1, 1)
 Button.BorderSizePixel = 0
 Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 10)
 
--- === TELEPORT LOOP (Versi Auto Suicide Summit) ===
+-- === TELEPORT LOOP (AUTO SUICIDE) ===
 local function teleportLoop()
 	running = true
 	while running do
 		for i, cf in ipairs(cframes) do
 			if not running then break end
 
-			character = player.Character or player.CharacterAdded:Wait()
-			local hrp = character:WaitForChild("HumanoidRootPart", 3)
-			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local char = player.Character or player.CharacterAdded:Wait()
+			local hrp = char:WaitForChild("HumanoidRootPart", 3)
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
 
 			if hrp and humanoid then
 				hrp.CFrame = cf
@@ -96,25 +93,21 @@ local function teleportLoop()
 			task.wait(delayTime)
 		end
 
-		-- 🏔️ Saat sampai Summit
-		Status.Text = "Summit reached! Suicide..."
+		-- 🏔️ Setelah sampai summit
+		Status.Text = "Summit reached! 💀 Suicide..."
 		task.wait(1)
 
-		-- bunuh karakter (suicide)
 		local char = player.Character
 		if char and char:FindFirstChildOfClass("Humanoid") then
 			char:FindFirstChildOfClass("Humanoid").Health = 0
 		end
 
-		-- tunggu respawn
-		task.wait(3)
-
-		-- pastikan karakter baru muncul
+		task.wait(3) -- tunggu respawn
 		character = player.Character or player.CharacterAdded:Wait()
 		character:WaitForChild("HumanoidRootPart")
 		character:WaitForChild("Humanoid")
 
-		Status.Text = "Respawned, restarting climb..."
+		Status.Text = "Respawned! Restarting climb..."
 		task.wait(2)
 	end
 	Status.Text = "Stopped"
