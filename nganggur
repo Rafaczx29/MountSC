@@ -77,45 +77,31 @@ Button.TextColor3 = Color3.new(1, 1, 1)
 Button.BorderSizePixel = 0
 Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 10)
 
-=== TELEPORT LOOP (Versi Auto Suicide Summit) ===
+-- === TELEPORT LOOP ===
 local function teleportLoop()
 	running = true
 	while running do
 		for i, cf in ipairs(cframes) do
 			if not running then break end
-
 			character = player.Character or player.CharacterAdded:Wait()
 			local hrp = character:WaitForChild("HumanoidRootPart", 3)
-			local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-			if hrp and humanoid then
+			if hrp then
 				hrp.CFrame = cf
 				Status.Text = ("Teleporting... [%d/%d]"):format(i, #cframes)
 			end
-
 			task.wait(delayTime)
 		end
 
-		-- 🏔️ Saat sampai Summit
-		Status.Text = "Summit reached! Suicide..."
+		-- ✅ Fix bagian ini biar auto reset dan lanjut lagi
+		Status.Text = "Summit reached! Resetting..."
 		task.wait(1)
+		player:LoadCharacter()
 
-		-- bunuh karakter (suicide)
-		local char = player.Character
-		if char and char:FindFirstChildOfClass("Humanoid") then
-			char:FindFirstChildOfClass("Humanoid").Health = 0
-		end
+		-- Tunggu karakter baru muncul setelah reset
+		character = player.CharacterAdded:Wait()
+		humanoid = character:WaitForChild("Humanoid")
 
-		-- tunggu respawn
 		task.wait(3)
-
-		-- pastikan karakter baru muncul
-		character = player.Character or player.CharacterAdded:Wait()
-		character:WaitForChild("HumanoidRootPart")
-		character:WaitForChild("Humanoid")
-
-		Status.Text = "Respawned, restarting climb..."
-		task.wait(2)
 	end
 	Status.Text = "Stopped"
 end
