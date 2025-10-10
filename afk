@@ -1,0 +1,257 @@
+-- Auto XP (pelan & stabil) untuk Parkour Legacy
+-- Behavior: move-to small points, occasional jump, random delay
+-- WARNING: Gunakan di private server / testing environment. Saya tidak menyarankan penggunaan di server publik.
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- safe GUI parent
+local function getGuiParent()
+	if gethui then return gethui() end
+	if syn and syn.protect_gui then return game:GetService("CoreGui") end
+	return player:WaitForChild("PlayerGui")
+end
+
+-- UI
+local screen = Instance.new("ScreenGui")
+screen.Name = "AutoXP_UI"
+screen.ResetOnSpawn = false
+screen.Parent = getGuiParent()
+
+local frame = Instance.new("Frame", screen)
+frame.Size = UDim2.new(0, 300, 0, 140)
+frame.Position = UDim2.new(0.5, -150, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,30)
+title.Position = UDim2.new(0,0,0,6)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "Auto XP — Pelan & Stabil"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 15
+
+local info = Instance.new("TextLabel", frame)
+info.Size = UDim2.new(1, -20, 0, 40)
+info.Position = UDim2.new(0,10,0,36)
+info.BackgroundTransparency = 1
+info.TextWrapped = true
+info.Font = Enum.Font.Gotham
+info.TextSize = 12
+info.TextColor3 = Color3.fromRGB(200,200,200)
+info.Text = "Mode: move-to kecil + jump occasional. Gunakan private server. Atur speed & jitter di bawah."
+
+local startBtn = Instance.new("TextButton", frame)
+startBtn.Size = UDim2.new(0.45, -8, 0, 30)
+startBtn.Position = UDim2.new(0.03, 0, 0.73, 0)
+startBtn.Text = "▶ Start"
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextSize = 14
+startBtn.BackgroundColor3 = Color3.fromRGB(50,160,70)
+Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0,8)
+
+local stopBtn = Instance.new("TextButton", frame)
+stopBtn.Size = UDim2.new(0.45, -8, 0, 30)
+stopBtn.Position = UDim2.new(0.52, 0, 0.73, 0)
+stopBtn.Text = "⏹ Stop"
+stopBtn.Font = Enum.Font.GothamBold
+stopBtn.TextSize = 14
+stopBtn.BackgroundColor3 = Color3.fromRGB(160,50,50)
+Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0,8)
+
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, -20, 0, 16)
+statusLabel.Position = UDim2.new(0, 10, 0.59, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 12
+statusLabel.TextColor3 = Color3.fromRGB(220,220,220)
+statusLabel.Text = "Status: Idle"
+
+-- CONFIG (bisa diubah)
+local MOVE_RADIUS = 6            -- radius (stud) dari posisi saat ini buat titik kecil
+local STEP_COUNT = 6             -- berapa titik dibuat dalam satu loop
+local MOVE_WAIT_MIN = 1.0        -- delay minimum antar move (detik)
+local MOVE_WAIT_MAX = 2.2        -- delay maksimum antar move (detik)
+local JUMP_CHANCE = 0.25         -- probabilitas lompat saat tiap titik
+local LOOP_WAIT = 1.0            -- jeda setelah satu siklus selesai
+local SAFE_GROUND_CHECK = true   -- coba pastikan Humanoid.FloorMaterial (opsional)
+
+-- state
+local running = false
+local moveCoroutine = nil
+
+-- helper random
+local function rnd(a,b) return a + math.random()*(b-a) end
+
+-- get humanoid & root
+local function getCharacterParts()
+	local char = player.Character
+	if not char then return nil end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	return char, hrp, humanoid
+end
+
+-- make small circle of target points around baseCFrame
+local function buildPoints(baseCFrame, count, radius)
+	local pts = {}
+	local bx, by, bz = baseCFrame.Position.X, baseCFrame.Position.Y, baseCFrame.Position.Z
+	for i = 1, count do
+		local ang = (i-1) * (2*math.pi / count) + rnd(-0.3,0.3)
+		local r = radius * (0.6 + math.random()*0.8) -- vary radius a bit
+		local x = bx + math.cos(ang)*r
+		local z = bz + math.sin(ang)*r
+		-- try small Y jitter to simulate small hops (not big)
+		local y = by + rnd(-0.3, 0.8)
+		table.insert(pts, Vector3.new(x,y,z))
+	end
+	return pts
+end
+
+-- safe MoveTo with fallback teleport if MoveTo stuck long
+local function safeMoveTo(hrp, humanoid, targetPos, timeout)
+	timeout = timeout or 4
+	if not hrp or not humanoid then return false end
+
+	local reached = false
+	local reachedConn
+	local moved = Instance.new("BindableEvent")
+	local startTick = tick()
+
+	-- connect DIRECTION: check every frame if near target
+	reachedConn = RunService.Heartbeat:Connect(function()
+		if (hrp.Position - targetPos).Magnitude < 2.2 then
+			reached = true
+			moved:Fire()
+		end
+	end)
+
+	-- command MoveTo
+	local success, err = pcall(function()
+		humanoid:MoveTo(targetPos)
+	end)
+
+	-- wait until reached or timeout
+	local done = false
+	local conn = moved.Event:Connect(function() done = true end)
+	while not done and tick() - startTick < timeout do
+		task.wait(0.12)
+	end
+	conn:Disconnect()
+	reachedConn:Disconnect()
+
+	-- if not reached after timeout, fallback small teleport (gentle)
+	if not done then
+		-- gentle interpolation teleport: lerp halfway to target to avoid huge instant jump
+		local current = hrp.CFrame
+		local half = current:Lerp(CFrame.new(targetPos), 0.5)
+		hrp.CFrame = half
+		-- small wait to let server process
+		task.wait(0.12)
+		-- try MoveTo again briefly
+		pcall(function() humanoid:MoveTo(targetPos) end)
+		-- final small wait
+		task.wait(0.4)
+	end
+
+	return true
+end
+
+-- main routine
+local function runAutoXP()
+	running = true
+	statusLabel.Text = "Status: Running"
+
+	while running do
+		local char, hrp, humanoid = getCharacterParts()
+		if not (char and hrp and humanoid) then
+			statusLabel.Text = "Status: Waiting for character..."
+			-- wait until character spawn
+			player.CharacterAdded:Wait()
+			task.wait(0.5)
+			goto continue_loop
+		end
+
+		-- build small movement points around current hrp
+		local base = hrp.CFrame
+		local points = buildPoints(base, STEP_COUNT, MOVE_RADIUS)
+
+		for idx, pos in ipairs(points) do
+			if not running then break end
+			-- check ground safety optionally (simple raycast down)
+			if SAFE_GROUND_CHECK then
+				local rayOrigin = Vector3.new(pos.X, pos.Y + 2.5, pos.Z)
+				local rayDir = Vector3.new(0, -8, 0)
+				local ray = Ray.new(rayOrigin, rayDir)
+				local hit = workspace:FindPartOnRayWithIgnoreList(ray, {char})
+				if not hit then
+					-- if no ground detected, nudge Y to base Y
+					pos = Vector3.new(pos.X, base.Position.Y, pos.Z)
+				end
+			end
+
+			-- attempt MoveTo with some timeout
+			pcall(function()
+				safeMoveTo(hrp, humanoid, pos, 4)
+			end)
+
+			-- Random small jump chance (simulate tricks)
+			if math.random() < JUMP_CHANCE then
+				pcall(function()
+					humanoid.Jump = true
+				end)
+			end
+
+			-- random move delay
+			local waitTime = rnd(MOVE_WAIT_MIN, MOVE_WAIT_MAX)
+			-- slight randomness decrease/increase to mimic human pattern
+			waitTime = waitTime + (math.random() - 0.5) * 0.3
+			for elapsed = 0, waitTime, 0.2 do
+				if not running then break end
+				task.wait(0.2)
+			end
+		end
+
+		::continue_loop::
+		if not running then break end
+		-- one cycle done
+		statusLabel.Text = "Status: Cycle complete. Waiting..."
+		local lw = LOOP_WAIT + (math.random()*1.5)
+		local t = 0
+		while t < lw and running do
+			task.wait(0.25); t = t + 0.25
+		end
+	end
+
+	statusLabel.Text = "Status: Stopped"
+end
+
+-- UI handlers
+startBtn.MouseButton1Click:Connect(function()
+	if running then return end
+	task.spawn(function()
+		runAutoXP()
+	end)
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+	running = false
+end)
+
+-- quick cleanup if duplicate UI exists (optional)
+for _, v in pairs(getGuiParent():GetChildren()) do
+	if v.Name == "AutoXP_UI" and v ~= screen then
+		pcall(function() v:Destroy() end)
+	end
+end
+
+-- ensure GUI visible (some executors need SetCoreGuiEnabled hack not available; we rely on safe parent)
+screen.Parent = getGuiParent()
+statusLabel.Text = "Status: Idle"
