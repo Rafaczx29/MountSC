@@ -1,0 +1,138 @@
+-- 🍭 Auto Candy Teleporter v3 (Loop + RGB UI + No Fall Damage)
+-- by GPT-5 | Inspired by Mount Pengangguran UI
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- === CONFIG ===
+local teleportDelay = 1.2
+local loopEnabled = true
+local pattern = "^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$"
+
+-- === FALL DAMAGE PROTECTION ===
+local function disableFallDamage()
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.StateChanged:Connect(function(_, newState)
+			if newState == Enum.HumanoidStateType.Freefall then
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end)
+	end
+end
+
+player.CharacterAdded:Connect(function(char)
+	character = char
+	task.wait(1)
+	disableFallDamage()
+end)
+disableFallDamage()
+
+-- === UI CREATION ===
+local gui = Instance.new("ScreenGui")
+gui.Name = "AutoCandyUI"
+gui.ResetOnSpawn = false
+gui.Parent = gethui and gethui() or game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 250, 0, 140)
+frame.Position = UDim2.new(0.8, 0, 0.25, 0)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BackgroundTransparency = 0.2
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "🍬 Auto Candy Teleporter"
+title.TextSize = 15
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Parent = frame
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -20, 0, 25)
+status.Position = UDim2.new(0, 10, 0, 40)
+status.BackgroundTransparency = 1
+status.Font = Enum.Font.Gotham
+status.TextSize = 13
+status.TextColor3 = Color3.fromRGB(200, 200, 200)
+status.Text = "Status: Idle"
+status.Parent = frame
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 210, 0, 40)
+button.Position = UDim2.new(0.5, -105, 1, -50)
+button.Text = "▶️ Start Auto Teleport"
+button.Font = Enum.Font.GothamBold
+button.TextSize = 14
+button.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.BorderSizePixel = 0
+Instance.new("UICorner", button).CornerRadius = UDim.new(0, 10)
+button.Parent = frame
+
+-- === RGB EFFECT ===
+task.spawn(function()
+	while true do
+		local t = tick() * 2
+		local r = math.sin(t) * 0.5 + 0.5
+		local g = math.sin(t + 2) * 0.5 + 0.5
+		local b = math.sin(t + 4) * 0.5 + 0.5
+		title.TextColor3 = Color3.new(r, g, b)
+		task.wait(0.05)
+	end
+end)
+
+-- === TELEPORT FUNCTION ===
+local running = false
+local function teleportToMatchingObjects()
+	while running do
+		local matched = {}
+		for _, obj in ipairs(workspace:GetChildren()) do
+			if obj:IsA("BasePart") and obj.Name:match(pattern) then
+				table.insert(matched, obj)
+			end
+		end
+
+		if #matched == 0 then
+			status.Text = "⚠️ No candy found!"
+			task.wait(3)
+		else
+			for i, obj in ipairs(matched) do
+				if not running then break end
+				character = player.Character or player.CharacterAdded:Wait()
+				local hrp = character:WaitForChild("HumanoidRootPart", 3)
+				if hrp then
+					hrp.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
+					status.Text = string.format("Teleporting... [%d/%d]", i, #matched)
+				end
+				task.wait(teleportDelay)
+			end
+			status.Text = "🍭 Looping again..."
+			task.wait(2)
+		end
+	end
+	status.Text = "⏹️ Stopped"
+end
+
+-- === BUTTON HANDLER ===
+button.MouseButton1Click:Connect(function()
+	if running then
+		running = false
+		button.Text = "▶️ Start Auto Teleport"
+		button.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+	else
+		running = true
+		button.Text = "⏸️ Stop Auto Teleport"
+		button.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+		status.Text = "Running..."
+		task.spawn(teleportToMatchingObjects)
+	end
+end)
